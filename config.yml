@@ -1,0 +1,91 @@
+# Configuration File updated in 2020/1/29 19:46
+# QQ白名单 - 配置文件 (Encode: UTF-8)
+
+# 本插件配置文件符合 YAML 配置文件格式
+# 请注意您修改该配置文件时的语法
+# 附: YAML入门教程 https://www.runoob.com/w3cnote/yaml-intro.html
+
+# 插件原帖: $thread
+# 本插件使用库: mamoe/mirai (https://github.com/mamoe/mirai)
+# mirai 版本: 1.3.3
+ 
+# 对你可能有帮助的链接:
+# 在线生成 deviceInfo.json(可能需要科学上网): https://ryoii.github.io/mirai-devicejs-generator/
+# mirai登录滑块验证 https://github.com/project-mirai/mirai-login-solver-selenium
+
+# 常规配置
+general:
+  ################## TIPS START ##################
+  
+  ###########
+  #    声 明    #
+  ###########
+  
+  # QQ号和密码涉及隐私，插件作者不保证这些信息的安全
+  # 其他插件可以通过反射、读取配置文件等方式获取到这些信息，
+  # 请安装其他插件之前，检查其安全性再安装。
+  # —— LazyCat aka bilibili_Xiao_M 于 2020年1月21日
+  
+  # 部分账号可以跳过滑块验证码，Mirai 会自动尝试
+  # 若你的账号无法跳过验证，可在 project-mirai/mirai-login-solver-selenium 查看处理方案。(链接在上面)
+  # —— Mirai 机器人开发文档 (https://github.com/mamoe/mirai/blob/dev/docs/Bots.md)
+  
+  ################### TIPS END ###################
+  
+  # 机器人QQ号
+  qq: -1
+  # 机器人密码
+  password: 'null'
+  # 插件启用时自动登录
+  auto-login: true
+  # 登录协议，无法登录时可以尝试切换协议
+  # 手机QQ: ANDROID_PHONE
+  # 平板QQ: ANDROID_PAD
+  # 手表QQ: ANDROID_WATCH
+  # 输入的值无效时自动使用 ANDROID_PAD
+  protocol: 'ANDROID_PAD'
+  
+  # 是否允许通过好友来请求添加白名单
+  # 不推荐开启，因为攻击者可以通过在机器人好友刷屏来达到假人攻击的目的，完全不可控
+  allowFriendRequest: false
+  # 是否自动通过好友申请
+  autoAcceptFriendAddRequest: false
+  # 可用于添加白名单的群号列表
+  # 请不要加引号
+  groupList: []
+  # 比如你的群号是0，就把上面的[]去掉然后把我下面这一行的#去掉，再把0改了即可
+  #- 0
+  # 可添加多个群号，例子如下
+  #- 0
+  #- 1
+  
+  # 允许的用户名正则表达式
+  # 默认是只允许用户名为大小写字母、数字、下划线组合的用户添加白名单
+  # 允许的用户名长度 3-16
+  # 附: 正则表达式教程 https://www.runoob.com/regexp/regexp-tutorial.html
+  nameRegex: '[a-zA-Z0-9_]*{3,16}'
+  
+  # 玩家使用QQ向机器人发送 “添加白名单LazyCat”
+  # 即可将玩家 LazyCat 添加进白名单
+  # 只要消息前缀有“添加白名单”都会截取后面的所有内容为玩家名称
+  prefixCommandKey: '添加白名单'
+# 消息
+messages:
+  prefix: '&7[&f白名单&7]&e'
+  logining: '&e正在登录机器人 $uid &7(详细结果请见控制台)'
+  loginfail: '&c登录机器人 $uid 失败! &a原因: &7$reason'
+  loginsuccess: '&a机器人 $uid 登录成功!'
+  logined: '&a机器人已经在线了! 无需重复登录'
+  destoryed: '&a机器人实例已销毁!'
+  reloaded: '&a插件重载完毕'
+  playernotexist: '&c玩家不存在'
+  bot:
+    prefix: '[服务器] '
+    invalidUsername: '无效的用户名'
+    addsuccess: '你已成功将玩家 $user 添加到白名单'
+    already: '玩家 $user 已经是白名单了，请不要重复添加'
+    addfail-banned: '玩家 $user 已被封禁，无法添加到白名单'
+  whitelist:
+    kick: '&b你还没有白名单，请加群 XXXX 到群内机器人申请'
+    add_by_cmd: '你已将 $user 添加到白名单'
+    remove_by_cmd: '你已将 $user 移出白名单'
