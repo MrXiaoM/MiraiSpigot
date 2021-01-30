@@ -27,8 +27,8 @@ public class Commands implements Listener {
 						sender.sendMessage(main.message_prefix + main.message_logined);
 						return;
 					}
-					main.login();
 					sender.sendMessage(main.message_prefix + main.message_logining.replace("$uid", String.valueOf(main.config_uid)));
+					main.login();
 					return;
 				}
 				if(args[0].equalsIgnoreCase("add")) {
@@ -76,7 +76,7 @@ public class Commands implements Listener {
 					+ "§b/qqwhitelist reload §f- §a重载插件并重新登录机器人\n"
 					+ "§b/qqwhitelist login §f- §a登录机器人\n"
 					+ "§b/qqwhitelist add [玩家] §f- §a添加某玩家为白名单\n"
-					+ "§b/qqwhitelist remove [玩家] §f- §a移除某玩家的白名单"
+					+ "§b/qqwhitelist remove [玩家] §f- §a移除某玩家的白名单\n"
 					+ "§b/qqwhitelist destory §f- §a销毁机器人(登出并销毁实例)\n"
 					+ "§a如果你安装了该插件的附属注册了Listener然后热卸载了\n"
 					+ "§a你可能需要使用该命令销毁实例再重新登录"

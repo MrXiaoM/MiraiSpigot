@@ -10,8 +10,8 @@ import net.mamoe.mirai.event.EventHandler;
 import net.mamoe.mirai.event.ListeningStatus;
 import net.mamoe.mirai.event.SimpleListenerHost;
 import net.mamoe.mirai.event.events.BotOnlineEvent;
-import net.mamoe.mirai.message.FriendMessageEvent;
-import net.mamoe.mirai.message.GroupMessageEvent;
+import net.mamoe.mirai.event.events.FriendMessageEvent;
+import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.NewFriendRequestEvent;
 import net.mamoe.mirai.message.data.QuoteReply;
 

@@ -4,27 +4,28 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import kotlin.coroutines.CoroutineContext;
-import kotlinx.coroutines.CoroutineScope;
-import net.mamoe.mirai.BotFactoryJvm;
-import net.mamoe.mirai.event.Events;
-import net.mamoe.mirai.qqandroid.QQAndroidBot;
+import com.google.common.collect.Lists;
+
+import net.mamoe.mirai.BotFactory;
+import net.mamoe.mirai.internal.QQAndroidBot;
 import net.mamoe.mirai.utils.BotConfiguration;
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol;
 
-public class Plugin extends JavaPlugin implements Listener, CoroutineScope{
+public class Plugin extends JavaPlugin implements Listener{
+	
 	public QQAndroidBot bot;
 	MiraiEventHost host;
 	Commands commands;
 	WhiteList whitelist;
-	CoroutineContext cc;
+	
+	// 留给后人用的，写附属插件注册机器人EventListener必备
+	public List<Runnable> onLogin = Lists.<Runnable>newArrayList();
 	
 	public String message_prefix;
 	public String message_logining;
@@ -43,19 +44,19 @@ public class Plugin extends JavaPlugin implements Listener, CoroutineScope{
 	
 	public String message_whitelist_kick;
 
-	public List<Long> config_groupList;
 	public long config_uid;
 	public String config_password;
+	public boolean config_auto_login;
 	public boolean config_allowFriendRequest;
 	public boolean config_autoAcceptFriendAddRequest;
 	public String config_nameRegex;
 	public String config_prefixCommandKey;
 	public String config_protocol;
-	public boolean config_auto_login;
+	public List<Long> config_groupList;
 
 	public void loadPluginConfig() {
 		this.saveDefaultConfig();
-
+		
 		this.message_prefix = this.getString("messages.prefix", "&7[&f白名单&7]&e").replace("&", "§");
 		this.message_logining = this.getString("messages.logining", "&e正在登录机器人 $uid &7(详细结果请见控制台)").replace("&", "§");
 		this.message_loginfail = this.getString("messages.loginfail", "&c登录机器人 $uid 失败! &a原因: &7 $reason").replace("&", "§");
@@ -96,7 +97,7 @@ public class Plugin extends JavaPlugin implements Listener, CoroutineScope{
 		initBot();
 		if (this.config_uid >= 10000 && this.config_auto_login) {
 			this.getLogger().info(this.message_prefix + this.message_logining.replace("$uid", String.valueOf(this.config_uid)));
-			this.bot.login();
+			this.login();
 		}
 	}
 	
@@ -105,26 +106,32 @@ public class Plugin extends JavaPlugin implements Listener, CoroutineScope{
 		
 		if(this.whitelist != null) this.whitelist.saveConfig();
 		else this.whitelist = new WhiteList(this);
-		
 	}
-
+	
 	public void onEnable() {
 		this.whitelist = new WhiteList(this);
-
-		this.loadPluginConfig();
-		
 		this.commands = new Commands(this);
 		this.host = new MiraiEventHost(this);
 		Bukkit.getPluginManager().registerEvents(commands, this);
 		Bukkit.getPluginManager().registerEvents(this, this);
-		this.initBot();
-		if (this.config_uid >= 10000L && this.config_auto_login) {
-			this.getLogger().info(this.message_prefix + this.message_logining.replace("$uid", String.valueOf(this.config_uid)));
-			this.login();
-		}
 		
+		this.getLogger().info("若出现NoSuchProviderException异常为jar安全验证不通过导致");
+		this.getLogger().info("已尝试捕捉但我捕捉不到，不影响正常使用，请见谅");
+		
+		this.addDefaultLoginTask();
+		this.reloadConfig();
 	}
 	
+	public void addDefaultLoginTask() {
+		this.onLogin.add(new Runnable() {
+			@Override
+			public void run() {
+				bot.getEventChannel().registerListenerHost(host);
+			}
+		});
+	}
+	
+	// 懒得搞 EventHost 了，反正就注册这一个事件
 	@EventHandler
 	public void onPlayerJoin(AsyncPlayerPreLoginEvent event) {
 		if(this.whitelist.contains(event.getName())) {
@@ -134,36 +141,60 @@ public class Plugin extends JavaPlugin implements Listener, CoroutineScope{
 			event.disallow(Result.KICK_WHITELIST, this.message_whitelist_kick);
 		}
 	}
-
+	
 	public void initBot() {
-		final String deviceInfoPath = this.getDataFolder().getAbsolutePath() + "\\deviceInfo.json";
-		final MiraiProtocol protocol = this.getProtocolFromString(config_protocol, MiraiProtocol.ANDROID_PAD);
-		
-		this.bot = (QQAndroidBot)BotFactoryJvm.newBot(this.config_uid, this.config_password, new BotConfiguration() {
-			{
-				this.setProtocol(protocol);
-				this.fileBasedDeviceInfo(deviceInfoPath);
-			}
-		});
-	}
-	public void login() {
-		if(this.bot == null) {
-			this.initBot();
+		try {
+			this.getLogger().info("正在初始化机器人实例");
+			final String deviceInfoPath = this.getDataFolder().getAbsolutePath() + "\\deviceInfo.json";
+			final MiraiProtocol protocol = this.getProtocolFromString(config_protocol, MiraiProtocol.ANDROID_PAD);
+			this.getLogger().info("使用协议: " + protocol.name());
+			this.bot = (QQAndroidBot)BotFactory.INSTANCE.newBot(this.config_uid, this.config_password, new BotConfiguration() {
+				{
+					this.setProtocol(protocol);
+					this.fileBasedDeviceInfo(deviceInfoPath);
+				}
+			});
+			this.getLogger().info("初始化完成");
+		} catch(Throwable t) {
+			// 因为某些原因，jar验证必不通过，所以要过滤掉这个异常
+			// 捕捉不到，草
+			//if (!t.getMessage().contains("cannot authenticate")) {
+				this.getLogger().warning("初始化机器人时出现一个异常: " + t.getLocalizedMessage());
+			//}
 		}
-		this.bot.login();
-
-		Events.registerEvents(bot, this.host);
+		if(this.bot != null) {
+			this.bot.getEventChannel().registerListenerHost(this.host);
+		}
 	}
+	
+	public void login() {
+		try {
+			if(this.bot == null) {
+				this.initBot();
+			}
+			this.bot.login();
+			
+			for(Runnable r : onLogin) {
+				r.run();
+			}
+		} catch(Throwable t) {
+			this.getLogger().warning("登录机器人时出现一个异常: ");
+			this.getLogger().warning(t.getLocalizedMessage());
+		}
+	}
+	
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		this.commands.onCommand((ConsoleCommandSender) sender, command, label, args);
+		this.commands.onCommand(sender, command, label, args);
 		return true;
 	}
 
 	public void onDisable() {
 		if (this.bot != null) {
 			try {
-			this.bot.close(new Exception("服务器关闭，登出机器人"));
-			}catch(Throwable t){t.printStackTrace();}
+				this.bot.close(new Exception("服务器关闭，登出机器人"));
+			}catch(Throwable t){
+				this.getLogger().warning("卸载插件登出机器人时出现一个异常: " + t.getLocalizedMessage());
+			}
 			this.getLogger().info("机器人账号已登出");
 		}
 		this.bot = null;
@@ -223,10 +254,5 @@ public class Plugin extends JavaPlugin implements Listener, CoroutineScope{
 			this.getLogger().warning("无法在配置文件中找到文本型值 \"" + key + "\"，将使用默认值");
 			return nullValue;
 		}
-	}
-
-	@Override
-	public CoroutineContext getCoroutineContext() {
-		return cc;
 	}
 }
