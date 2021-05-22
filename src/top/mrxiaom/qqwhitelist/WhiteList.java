@@ -2,12 +2,10 @@ package top.mrxiaom.qqwhitelist;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-
-import com.google.common.collect.Lists;
 
 public class WhiteList {
 	FileConfiguration config;
@@ -29,33 +27,53 @@ public class WhiteList {
 		return this.config;
 	}
 	
-	public void add(String player) {
-		if(!this.config.contains("whitelist")) this.config.set("whitelist", Lists.<String>newArrayList());
-		List<String> oldList = this.config.getStringList("whitelist");
-		oldList.add(player);
-		this.config.set("whitelist", oldList);
+	public void add(String player, long uid) {
+		this.config.set("whitelist-qq." + player, String.valueOf(uid));
+		this.saveConfig();
 	}
 
 	public void remove(String player) {
-		if(!this.config.contains("whitelist")) this.config.set("whitelist", Lists.<String>newArrayList());
-		List<String> oldList = this.config.getStringList("whitelist");
-		oldList.remove(player);
-		this.config.set("whitelist", oldList);
+		if(!this.config.contains("whitelist-qq."+player)) return;
+		ConfigurationSection cs = this.config.getConfigurationSection("whitelist-qq");
+		ConfigurationSection newcs = this.config.createSection("whitelist-qq");
+		for(String key : cs.getKeys(false)) {
+			if(!key.equalsIgnoreCase(player)) {
+				newcs.set(key, cs.get(key));
+			}
+		}
+		this.config.set("whitelist-qq", newcs);
+		this.saveConfig();
 	}
 	
 	public boolean contains(String player) {
-		if(!this.config.contains("whitelist")) this.config.set("whitelist", Lists.<String>newArrayList());
-		return this.config.getStringList("whitelist").contains(player);
+		return this.config.contains("whitelist-qq." + player);
+	}
+	
+	public int getQQBinds(long qq) {
+		if(!this.config.contains("whitelist-qq")) return 0;
+		ConfigurationSection cs = this.config.getConfigurationSection("whitelist-qq");
+		int count = 0;
+		for(String key : cs.getKeys(false)) {
+			if(cs.getString(key).equalsIgnoreCase(String.valueOf(qq))) {
+				count++;
+			}
+		}
+		return count;
 	}
 	
 	public void reloadConfig() {
 		if(configFile.exists()) {
 			config = YamlConfiguration.loadConfiguration(configFile);
-			if(!this.config.contains("whitelist")) this.config.set("whitelist", Lists.<String>newArrayList());
+			if(this.config.contains("whitelist") && this.config.isList("whitelist")) {
+				for(String str : this.config.getStringList("whitelist")) {
+					this.getConfig().set("whitelist-qq." + str, "-1");
+				}
+				this.config.set("whitelist", "@Deprecated");
+				this.saveConfig();
+			}
 		}
 		else {
 			config = new YamlConfiguration();
-			config.set("whitelist", Lists.<String>newArrayList());
 			this.saveConfig();
 		}
 	}

@@ -43,6 +43,7 @@ public class Plugin extends JavaPlugin implements Listener{
 	public String message_bot_banned;
 	
 	public String message_whitelist_kick;
+	public String message_whitelist_max;
 
 	public long config_uid;
 	public String config_password;
@@ -71,8 +72,9 @@ public class Plugin extends JavaPlugin implements Listener{
 		this.message_bot_addsuccess = this.getString("messages.bot.addsuccess", "无效的用户名");
 		this.message_bot_already = this.getString("messages.bot.already", "玩家 $user 已经是白名单了，请不要重复添加");
 		this.message_bot_banned = this.getString("messages.bot.addfail-banned", "玩家 $user 已被封禁，无法添加到白名单").replace("&", "§");
-		
+
 		this.message_whitelist_kick = this.getString("messages.whitelist.kick", "&b你还没有白名单，请加群 XXXX 到群内机器人申请").replace("&", "§");
+		this.message_whitelist_max = this.getString("messages.whitelist.max", "&b你的QQ号已经不能再申请更多的白名单了!").replace("&", "§");
 
 		this.config_groupList = this.getConfig().getLongList("general.groupList");
 		this.config_uid = this.getLong("general.qq", -1);
@@ -127,6 +129,7 @@ public class Plugin extends JavaPlugin implements Listener{
 			@Override
 			public void run() {
 				bot.getEventChannel().registerListenerHost(host);
+				getLogger().info("已注册默认的QQ监听事件");
 			}
 		});
 	}
@@ -161,9 +164,6 @@ public class Plugin extends JavaPlugin implements Listener{
 			//if (!t.getMessage().contains("cannot authenticate")) {
 				this.getLogger().warning("初始化机器人时出现一个异常: " + t.getLocalizedMessage());
 			//}
-		}
-		if(this.bot != null) {
-			this.bot.getEventChannel().registerListenerHost(this.host);
 		}
 	}
 	

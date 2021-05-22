@@ -52,7 +52,13 @@ public class MiraiEventHost extends SimpleListenerHost{
 							event.getSender().sendMessage(new QuoteReply(event.getSource()).plus(main.message_bot_prefix + main.message_bot_already.replace("$user", player)));
 							return ListeningStatus.LISTENING;
 						}
-						main.whitelist.add(player);
+						int max = main.getConfig().getInt("max-apply-whitelist-count");
+						int now = main.whitelist.getQQBinds(event.getSender().getId());
+						if(now >= max) {
+							event.getSender().sendMessage(new QuoteReply(event.getSource()).plus(main.message_bot_prefix + main.message_whitelist_max));
+							return ListeningStatus.LISTENING;
+						}
+						main.whitelist.add(player, event.getSender().getId());
 						main.whitelist.saveConfig();
 						main.getLogger().info("玩家 " + player + " 通过QQ "+ event.getSender().getId() + " 添加了自己为白名单");
 						//Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "whitelist add " + player);
@@ -89,8 +95,14 @@ public class MiraiEventHost extends SimpleListenerHost{
 							event.getGroup().sendMessage(new QuoteReply(event.getSource()).plus(main.message_bot_prefix + main.message_bot_already.replace("$user", player)));
 							return ListeningStatus.LISTENING;
 						}
-						main.whitelist.add(player);
-						main.whitelist.saveConfig();
+						int max = main.getConfig().getInt("general.max-apply-whitelist-count");
+						int now = main.whitelist.getQQBinds(event.getSender().getId());
+						
+						if(now >= max) {
+							event.getGroup().sendMessage(new QuoteReply(event.getSource()).plus(main.message_bot_prefix + main.message_whitelist_max));
+							return ListeningStatus.LISTENING;
+						}
+						main.whitelist.add(player, event.getSender().getId());
 						main.getLogger().info("玩家 " + player + " 通过QQ群 " + event.getGroup().getId() + " 的成员 "+ event.getSender().getId() + " 添加了自己为白名单");
 						//Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "whitelist add " + player);
 						event.getGroup().sendMessage(new QuoteReply(event.getSource()).plus(main.message_bot_prefix + main.message_bot_addsuccess.replace("$user", player)));

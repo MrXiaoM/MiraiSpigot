@@ -39,7 +39,7 @@ public class Commands implements Listener {
 								sender.sendMessage(main.message_prefix + main.message_bot_already);
 								return;
 							}
-							main.whitelist.add(player);
+							main.whitelist.add(player, -1);
 							main.whitelist.saveConfig();
 							sender.sendMessage(main.message_prefix + "");
 						}
