@@ -137,11 +137,17 @@ public class Plugin extends JavaPlugin implements Listener{
 	// 懒得搞 EventHost 了，反正就注册这一个事件
 	@EventHandler
 	public void onPlayerJoin(AsyncPlayerPreLoginEvent event) {
-		if(this.whitelist.contains(event.getName())) {
-			event.allow();
+		if(!this.getConfig().contains("enable")) {
+			this.getConfig().set("enable", true);
+			this.saveConfig();
 		}
-		else {
-			event.disallow(Result.KICK_WHITELIST, this.message_whitelist_kick);
+		if(this.getConfig().getBoolean("enable")) {
+			if(this.whitelist.contains(event.getName())) {
+				event.allow();
+			}
+			else {
+				event.disallow(Result.KICK_WHITELIST, this.message_whitelist_kick.replace("$user", event.getName()));
+			}
 		}
 	}
 	

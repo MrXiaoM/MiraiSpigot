@@ -22,6 +22,18 @@ public class Commands implements Listener {
 					main.reloadConfig();
 					return;
 				}
+				if(args[0].equalsIgnoreCase("on")) {
+					main.getConfig().set("enable", true);
+					main.saveConfig();
+					sender.sendMessage("已开启白名单功能");
+					return;
+				}
+				if(args[0].equalsIgnoreCase("off")) {
+					main.getConfig().set("enable", false);
+					main.saveConfig();
+					sender.sendMessage("已关闭白名单功能");
+					return;
+				}
 				if(args[0].equalsIgnoreCase("login")) {
 					if(main.isBotOnline()) { 
 						sender.sendMessage(main.message_prefix + main.message_logined);
