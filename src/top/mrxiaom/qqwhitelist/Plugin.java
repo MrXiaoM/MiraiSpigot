@@ -1,5 +1,6 @@
 package top.mrxiaom.qqwhitelist;
 
+import java.io.File;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -137,11 +138,7 @@ public class Plugin extends JavaPlugin implements Listener{
 	// 懒得搞 EventHost 了，反正就注册这一个事件
 	@EventHandler
 	public void onPlayerJoin(AsyncPlayerPreLoginEvent event) {
-		if(!this.getConfig().contains("enable")) {
-			this.getConfig().set("enable", true);
-			this.saveConfig();
-		}
-		if(this.getConfig().getBoolean("enable")) {
+		if(!new File(this.getDataFolder(), "disabled").exists()) {
 			if(this.whitelist.contains(event.getName())) {
 				event.allow();
 			}

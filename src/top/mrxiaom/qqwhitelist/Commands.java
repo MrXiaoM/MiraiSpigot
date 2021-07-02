@@ -1,5 +1,6 @@
 package top.mrxiaom.qqwhitelist;
 
+import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,15 +24,15 @@ public class Commands implements Listener {
 					return;
 				}
 				if(args[0].equalsIgnoreCase("on")) {
-					main.getConfig().set("enable", true);
-					main.saveConfig();
-					sender.sendMessage("已开启白名单功能");
+					File f = new File(main.getDataFolder(), "disabled");
+					if(f.exists()) f.delete();
+					sender.sendMessage("§aWHITELIST ON");
 					return;
 				}
 				if(args[0].equalsIgnoreCase("off")) {
-					main.getConfig().set("enable", false);
-					main.saveConfig();
-					sender.sendMessage("已关闭白名单功能");
+					File f = new File(main.getDataFolder(), "disabled");
+					if(!f.exists()) try {f.createNewFile();} catch(Throwable t) {t.printStackTrace();}
+					sender.sendMessage("§cWHITELIST OFF");
 					return;
 				}
 				if(args[0].equalsIgnoreCase("login")) {
